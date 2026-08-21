@@ -19,4 +19,4 @@ jobs:
         run: flutter pub get
 
       - name: Rodar test integração
-        run: flutter test integration_test
+        run: flutter test integration_test -d linux
