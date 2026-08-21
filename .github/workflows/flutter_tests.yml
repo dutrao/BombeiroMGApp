@@ -4,11 +4,17 @@ on: [push, pull_request]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
       - name: Baixar código
         uses: actions/checkout@v4
+
+      - name: Configurar Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
 
       - name: Instalar Flutter
         uses: subosito/flutter-action@v2
@@ -18,12 +24,5 @@ jobs:
       - name: Baixar dependências
         run: flutter pub get
 
-      - name: Rodar teste de integração no Android
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 35
-          arch: x86_64
-          profile: pixel_6
-          script: |
-            flutter devices
-            flutter test integration_test -d emulator-5554
+      - name: Rodar teste de integração
+        run: flutter test integration_test -d windows
