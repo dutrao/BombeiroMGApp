@@ -20,7 +20,7 @@ import 'package:provider/provider.dart';
   MockSpec<FirebaseAuth>(),
 ])*/
 void main() {
-   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
   group('tester de integração', () {
     final database = AppDatabase();
     setUpAll(() async {
@@ -30,7 +30,7 @@ void main() {
       await FirebaseAuth.instance.signOut();
     });
     testWidgets('realizar login', (tester) async {
-    await  tester.pumpWidget(
+      await tester.pumpWidget(
         MultiProvider(
           providers: [
             Provider<AppDatabase>.value(value: database),
@@ -46,18 +46,21 @@ void main() {
           child: const MyApp(),
         ),
       );
-    await  tester.pumpAndSettle();
-    expect(find.text('Login'), findsOneWidget);
+      await tester.pumpAndSettle();
+      expect(find.text('Login'), findsOneWidget);
 
-   await tester.enterText(find.byKey(Key('campoEmail')), 'lucas.cabral@bombeiros.mg.gov.br');
-   await  tester.enterText(find.byKey(Key('campoSenha')), '123321');
-   await tester.tap(find.byKey(Key('textoLogin')));
-   await tester.tap(find.byKey(Key('botaoEntrar')));
-   
-   await tester.pumpAndSettle(Duration(seconds: 4));
+      await tester.enterText(
+        find.byKey(Key('campoEmail')),
+        'lucas.cabral@bombeiros.mg.gov.br',
+      );
+      await tester.enterText(find.byKey(Key('campoSenha')), '123321');
+      FocusManager.instance.primaryFocus?.unfocus();
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(Key('botaoEntrar')));
 
-    expect(find.textContaining('Olá'), findsOneWidget);
+      await tester.pumpAndSettle(Duration(seconds: 4));
+
+      expect(find.textContaining('Olá'), findsOneWidget);
     });
-
   });
 }
