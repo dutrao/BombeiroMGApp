@@ -1,0 +1,22 @@
+name: Flutter CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Baixar código
+        uses: actions/checkout@v6
+
+      - name: Instalar Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Baixar dependências
+        run: flutter pub get
+
+      - name: Rodar test integração
+        run: flutter test integration_test
