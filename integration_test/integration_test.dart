@@ -56,9 +56,11 @@ void main() {
       await tester.enterText(find.byKey(Key('campoSenha')), '123321');
       FocusManager.instance.primaryFocus?.unfocus();
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(Key('botaoEntrar')));
+      await tester.tap(find.byKey(const Key('botaoEntrar')));
 
-      await tester.pumpAndSettle(Duration(seconds: 4));
+      await tester.pumpAndSettle(const Duration(seconds: 4));
+
+      print('Achou Olá: ${find.textContaining('Olá').evaluate().length}');
 
       expect(find.textContaining('Olá'), findsOneWidget);
     });
