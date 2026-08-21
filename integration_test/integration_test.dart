@@ -51,8 +51,9 @@ void main() {
 
    await tester.enterText(find.byKey(Key('campoEmail')), 'lucas.cabral@bombeiros.mg.gov.br');
    await  tester.enterText(find.byKey(Key('campoSenha')), '123321');
+   await tester.tap(find.byKey(Key('textoLogin')));
    await tester.tap(find.byKey(Key('botaoEntrar')));
-
+   
    await tester.pumpAndSettle(Duration(seconds: 4));
 
     expect(find.textContaining('Olá'), findsOneWidget);

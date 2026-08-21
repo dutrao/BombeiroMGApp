@@ -57,6 +57,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     Align(
                       alignment: Alignment.topLeft,
                       child: Text(
+                        key: Key('textoLogin'),
                         'Login',
                         style: GoogleFonts.prompt(
                           fontSize: 20,
