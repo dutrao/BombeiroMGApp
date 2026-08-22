@@ -46,7 +46,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   children: [
                     Padding(
-                      padding: EdgeInsetsGeometry.fromLTRB(0, 160, 0, 0),
+                      padding: EdgeInsetsGeometry.fromLTRB(0, 150, 0, 0),
                       child: Image.asset(
                         'assets/brasao.png',
                         width: 200,
