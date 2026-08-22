@@ -49,8 +49,6 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      print('ERRO 1: ${tester.takeException()}');
-
       expect(find.text('Login'), findsOneWidget);
 
       await tester.enterText(
@@ -60,27 +58,17 @@ void main() {
 
       await tester.pump();
 
-      print('ERRO 2 - depois email: ${tester.takeException()}');
-
       await tester.enterText(find.byKey(const Key('campoSenha')), '123321');
 
       await tester.pump();
-
-      print('ERRO 3 - depois senha: ${tester.takeException()}');
 
       FocusManager.instance.primaryFocus?.unfocus();
 
       await tester.pumpAndSettle();
 
-      print('ERRO 4 - depois unfocus: ${tester.takeException()}');
-
       await tester.tap(find.byKey(const Key('botaoEntrar')));
 
       await tester.pumpAndSettle(const Duration(seconds: 4));
-
-      print('ERRO 5 - depois login: ${tester.takeException()}');
-
-      print('Achou Olá: ${find.textContaining('Olá').evaluate().length}');
 
       expect(find.textContaining('Olá'), findsOneWidget);
     });
