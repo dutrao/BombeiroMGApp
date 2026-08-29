@@ -1,20 +1,28 @@
-analyze:
-  name: Analyze
-  runs-on: ubuntu-latest
+name: CI
 
-  steps:
-    - name: Checkout do código
-      uses: actions/checkout@v4
+on:
+  pull_request:
+    branches:
+      - dev
 
-    - name: Configurar Flutter
-      uses: subosito/flutter-action@v2
-      with:
-        flutter-version: '3.44.0'
-        channel: stable
-        cache: true
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
 
-    - name: Flutter pub get
-      run: flutter pub get
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
 
-    - name: Flutter analyze
-      run: flutter analyze --no-fatal-infos --no-fatal-warnings
+      - name: Configurar Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.0'
+          channel: stable
+          cache: true
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: Flutter analyze
+        run: flutter analyze --no-fatal-infos --no-fatal-warnings
