@@ -3,6 +3,8 @@ plugins {
 
     // O plugin do Flutter deve ser aplicado depois do plugin Android.
     id("dev.flutter.flutter-gradle-plugin")
+
+    id("com.google.gms.google-services")
 }
 
 android {
