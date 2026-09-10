@@ -1,0 +1,45 @@
+name: "CD Prod"
+
+on:
+  push:
+    branches: main
+
+jobs:
+  android-deploy:
+    name: Android Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.x' # Ou a versão específica do Flutter que você está usando
+
+      - name: Generate keyproperties
+        run: |
+          cd android
+          touch key.properties
+          echo "storePassword=${{ secrets.ANDROID_STORE_PASSWORD }}" >> key.properties
+          echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> key.properties
+          echo "keyAlias=student_wl_app_key" >> key.properties
+          echo "storeFile=./keystore.jks" >> key.properties
+          cat key.properties
+
+      - name: Decode keystore
+        env:
+          ANDROID_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE }}
+        run: echo "$ANDROID_KEYSTORE" | base64 -d >> ./android/app/keystore.jks
+
+      - name: Build appbundle
+        run: flutter build appbundle --release
+
+      - name: Setup Authorization with Google Play Store
+        run: echo '${{ secrets.GOOGLE_PLAY_ACCESS_KEY_JSON }}' > service_account.json
+
+      - name: Deploy bundle to Google Play
+        uses: r0adkll/upload-google-play@v1.1.3
+        with:
+          serviceAccountJson: service_account.json
+          packageName: com.txtsoftwares.sorteador
+          releaseFiles: build/app/outputs/bundle/release/app-release.aab
+          track: "internal"
+          status: "completed"
