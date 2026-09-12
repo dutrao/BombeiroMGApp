@@ -1,51 +1,71 @@
-name: "CI-project" # Nome do workflow
+name: "CD Test"
 
 on:
-  pull_request:
-    branches: main # Acionado em pull requests para a branch main
+  push:
+    branches:
+      - temporary
 
 jobs:
-  firebase-test-lab: # Nome do job
-    name: Firebase Test Lab
+  android-deploy:
+    name: Android Test Deploy
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout no código
+      # 1. Baixa o projeto
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Configurar Flutter
+      # 2. Configura Java
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      # 3. Configura Flutter
+      - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.44.0'
-          channel: 'stable'
+          channel: stable
           cache: true
 
-      - name: Flutter pub get
+      # 4. Baixa as dependências
+      - name: Get dependencies
         run: flutter pub get
 
-      - name: Build APKs for testing
+      # 5. Cria o key.properties usado pelo build release
+      - name: Generate key.properties
         run: |
-          pushd android
-          flutter build apk --debug
-          ./gradlew app:assembleAndroidTest
-          ./gradlew app:assembleDebug -Ptarget=integration_test/app_test.dart
-          popd
+          cd android
+          touch key.properties
+          echo "storePassword=${{ secrets.ANDROID_STORE_PASSWORD }}" >> key.properties
+          echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> key.properties
+          echo "keyAlias=bombeiro_app" >> key.properties
+          echo "storeFile=./keystore.jks" >> key.properties
 
-      - name: Setup gcloud CLI
-        uses: google-github-actions/setup-gcloud@v2
-        with:
-          project_id: ${{ secrets.FIREBASE_PROJECT_ID }}
-
-      - name: Autenticar com o Google Cloud
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.FIREBASE_CREDENTIALS }}
-
-      - name: Run Integration Test on Firebase Test Lab
+      # 6. Reconstrói o keystore a partir do GitHub Secret
+      - name: Decode keystore
+        env:
+          ANDROID_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE }}
         run: |
-          gcloud firebase test android run --type instrumentation \
-            --app build/app/outputs/apk/debug/app-debug.apk \
-            --test build/app/outputs/apk/androidTest/debug/app-debug-androidTest.apk \
-            --orientations=portrait \
-            --use-orchestrator \
-            --timeout 3m \
-            --results-dir=tests/firebase
+          echo "$ANDROID_KEYSTORE" | base64 -d > ./android/app/keystore.jks
+
+      # 7. Gera um Android App Bundle RELEASE
+      - name: Build App Bundle
+        run: flutter build appbundle --release
+
+      # 8. Cria o arquivo de autenticação da Google Play
+      - name: Setup Google Play credentials
+        run: |
+          echo '${{ secrets.GOOGLE_PLAY_ACCESS_KEY_JSON }}' > service_account.json
+
+      # 9. Envia para a faixa de teste interno da Play Store
+      - name: Deploy to Google Play Internal Testing
+        uses: r0adkll/upload-google-play@v1.1.5
+        with:
+          serviceAccountJson: service_account.json
+          packageName: br.com.bombeiro_app
+          releaseFiles: build/app/outputs/bundle/release/app-release.aab
+          tracks: internal
+          status: completed

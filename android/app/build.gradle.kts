@@ -13,6 +13,7 @@ plugins {
 val keystoreProperties = Properties()
 val keystorePropertiesFile = rootProject.file("key.properties")
 
+// Carrega as propriedades de assinatura somente se o arquivo existir.
 if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
@@ -24,12 +25,16 @@ android {
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
+    // Cria a configuração de release somente quando
+    // o key.properties estiver disponível.
     signingConfigs {
-        create("release") {
-            keyAlias = keystoreProperties["keyAlias"] as String
-            keyPassword = keystoreProperties["keyPassword"] as String
-            storeFile = file(keystoreProperties["storeFile"] as String)
-            storePassword = keystoreProperties["storePassword"] as String
+        if (keystorePropertiesFile.exists()) {
+            create("release") {
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+                storeFile = file(keystoreProperties["storeFile"] as String)
+                storePassword = keystoreProperties["storePassword"] as String
+            }
         }
     }
 
@@ -52,8 +57,17 @@ android {
     }
 
     buildTypes {
+
+        // Debug continua funcionando normalmente mesmo sem key.properties.
+        debug {
+            // Usa assinatura padrão de debug do Android.
+        }
+
         release {
-            signingConfig = signingConfigs.getByName("release")
+            // Só usa a assinatura de produção se o key.properties existir.
+            if (keystorePropertiesFile.exists()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 }
