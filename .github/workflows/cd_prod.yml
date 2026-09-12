@@ -49,7 +49,7 @@ jobs:
         uses: r0adkll/upload-google-play@v1.1.5
         with:
           serviceAccountJson: service_account.json
-          packageName: com.example.bombeiro_app
+          packageName: br.com.bombeiro_app
           releaseFiles: build/app/outputs/bundle/release/app-release.aab
           tracks: internal
           status: completed

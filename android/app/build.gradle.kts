@@ -1,3 +1,6 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id("com.android.application")
 
@@ -7,10 +10,28 @@ plugins {
     id("com.google.gms.google-services")
 }
 
+val keystoreProperties = Properties()
+val keystorePropertiesFile = rootProject.file("key.properties")
+
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
+
 android {
-    namespace = "com.example.bombeiro_app"
+
+    namespace = "br.com.bombeiro_app"
+
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
+
+    signingConfigs {
+        create("release") {
+            keyAlias = keystoreProperties["keyAlias"] as String
+            keyPassword = keystoreProperties["keyPassword"] as String
+            storeFile = file(keystoreProperties["storeFile"] as String)
+            storePassword = keystoreProperties["storePassword"] as String
+        }
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -21,7 +42,7 @@ android {
         testInstrumentationRunner =
             "androidx.test.runner.AndroidJUnitRunner"
 
-        applicationId = "com.example.bombeiro_app"
+        applicationId = "br.com.bombeiro_app"
 
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
@@ -32,8 +53,7 @@ android {
 
     buildTypes {
         release {
-            // Adequado somente para testes.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 }
@@ -51,8 +71,8 @@ flutter {
 dependencies {
     testImplementation("junit:junit:4.12")
 
-    // https://developer.android.com/jetpack/androidx/releases/test/#1.2.0
     androidTestImplementation("androidx.test:runner:1.2.0")
+
     androidTestImplementation(
         "androidx.test.espresso:espresso-core:3.2.0"
     )

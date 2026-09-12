@@ -1,4 +1,4 @@
-package com.example.bombeiro_app
+package br.com.bombeiro_app
 
 import io.flutter.embedding.android.FlutterActivity
 

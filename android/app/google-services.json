@@ -7,6 +7,42 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:633946865169:android:5b27086a2d85b676c8bbb0",
+        "android_client_info": {
+          "package_name": "br.com.bombeiro_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "633946865169-9k5ant9q9022tpcubhogllkhaqrr7a58.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAW7bE5kfD519iDi_NW00ldJP1RIFsHt4g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "633946865169-9k5ant9q9022tpcubhogllkhaqrr7a58.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "633946865169-9b09h5qeppp288gl3gqrueu58cpqpajv.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.flutterApplication1"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:633946865169:android:09441613d2ca1e94c8bbb0",
         "android_client_info": {
           "package_name": "com.example.app1"
