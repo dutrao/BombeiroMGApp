@@ -10,9 +10,12 @@ class EfetivoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final storage = context.watch<Storage>();
 
+    
     final listaMilitares = storage.convertListaAnuncioMilitarParaListaMilitar(
       storage.listaCompletaAnuncio,
     );
+    
+    
     return Material(
       color: Color(0xff8b1012),
       borderRadius: BorderRadius.circular(10),
@@ -58,11 +61,7 @@ class EfetivoCard extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Text(
-                              context
-                                  .watch<Storage>()
-                                  .listaCompletaAnuncio
-                                  .length
-                                  .toString(),
+                              listaMilitares.length.toString(),
                               style: TextStyle(color: Colors.white, fontSize: 18),
                             ),
                             Text(

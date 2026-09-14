@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/model/destinacao_militar.dart';
 import 'package:flutter_application_1/storage/storage.dart';
 import 'package:provider/provider.dart';
 
 class EfetivoTopCard extends StatelessWidget {
-  const EfetivoTopCard({super.key});
+  final List<DestinacaoMilitar> listaDestinacaoMilitar;
+  const EfetivoTopCard({super.key, required this.listaDestinacaoMilitar});
 
   @override
   Widget build(BuildContext context) {
     final storage = context.watch<Storage>();
-
-    final listaMilitares = storage.convertListaAnuncioMilitarParaListaMilitar(
-      storage.listaCompletaAnuncio,
-    );
+    final listaMilitares = listaDestinacaoMilitar.map((destinacaoMilitar) {
+      return destinacaoMilitar.militar;
+    },).toList();
     return Material(
       color: Color(0xff8b1012),
       borderRadius: BorderRadius.circular(10),
@@ -56,11 +57,7 @@ class EfetivoTopCard extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Text(
-                              context
-                                  .watch<Storage>()
-                                  .listaCompletaAnuncio
-                                  .length
-                                  .toString(),
+                              listaMilitares.length.toString(),
                               style: TextStyle(color: Colors.white, fontSize: 18),
                             ),
                             Text(

@@ -24,7 +24,7 @@ class AnuncioMilitarDao {
     List<AnuncioMilitar> listaAnuncioMilitar,
   ) async {
     try {
-      appDatabase.batch((batch) {
+     await appDatabase.batch((batch) {
         batch.insertAll(
           appDatabase.anuncioMilitarTabela,
           listaAnuncioMilitar.map((anuncioMilitar) {

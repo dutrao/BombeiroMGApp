@@ -68,21 +68,27 @@ class _EfetivoOperacionalScreenState extends State<EfetivoOperacionalScreen> {
       ),
       body: SafeArea(
         child: RefreshIndicator(
-          onRefresh: carregarDadosEfetivoOperacional,
-          child: Column(
-            children: [
-              CardInformacoesAnuncioMilitar.CardInformacoesAnuncioMilitar(
-                responsavel: militarResponsavelAnuncio == null
-                    ? '---'
-                    : '${militarResponsavelAnuncio!.cargo} ${militarResponsavelAnuncio!.nomeDeGuerra}',
-                dataHorario: dataHorarioTexto,
-              ),
-              Padding(
-                padding: EdgeInsets.only(bottom: 16),
-                child: EfetivoTopCard(),
-              ),
-              Expanded(
-                child: ListView.builder(
+          onRefresh: () async{
+           await carregarDadosEfetivoOperacional();
+          } ,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CardInformacoesAnuncioMilitar.CardInformacoesAnuncioMilitar(
+                  responsavel: militarResponsavelAnuncio == null
+                      ? '---'
+                      : '${militarResponsavelAnuncio!.cargo} ${militarResponsavelAnuncio!.nomeDeGuerra}',
+                  dataHorario: dataHorarioTexto,
+                ),
+                Padding(
+                  padding: EdgeInsets.only(bottom: 16),
+                  child: EfetivoTopCard(listaDestinacaoMilitar: listaDestinacaoMilitar,),
+                ),
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
                   itemCount: destinacoes.length,
                   itemBuilder: (context, index) {
@@ -132,13 +138,42 @@ class _EfetivoOperacionalScreenState extends State<EfetivoOperacionalScreen> {
                                           ),
                                     ),
                                   ),
-                                  leading: carregandoImagem == true
-                                      ? CircularProgressIndicator()
-                                      : ClipRRect(
-                                          child: Image.network(
-                                            militar.urlImagem,
-                                          ),
-                                        ),
+                                  leading: SizedBox(
+                                    height: 50,
+                                    width: 50,
+                                    child: ClipRRect(borderRadius: BorderRadius.circular(25),                                                                                                              
+                                      child: militar.urlImagem.isNotEmpty
+                                          ? Image.network(fit: BoxFit.cover,
+                                              militar.urlImagem,
+                                              loadingBuilder:
+                                                  (
+                                                    context,
+                                                    child,
+                                                    loadingProgress,
+                                                  ) {
+                                                    if (loadingProgress ==
+                                                        null) {
+                                                      return child;
+                                                    }
+                            
+                                                    return const Center(
+                                                      child:
+                                                          CircularProgressIndicator(),
+                                                    );
+                                                  },
+                                              errorBuilder:
+                                                  (context, error, stackTrace) {
+                                                    return const Icon(
+                                                      Icons.person,
+                                                      size: 50,
+                                                    );
+                                                  },
+                                              width: 50,
+                                              height: 50,
+                                            )
+                                          : const Icon(Icons.person, size: 50),
+                                    ),
+                                  ),
                                   title: Text(
                                     militar.nomeDeGuerra,
                                     style: GoogleFonts.inter(
@@ -160,13 +195,15 @@ class _EfetivoOperacionalScreenState extends State<EfetivoOperacionalScreen> {
                     );
                   },
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
   }
+
+  void carregarImagem() {}
 
   Future<void> carregarDadosEfetivoOperacional() async {
     final storage = context.read<Storage>();

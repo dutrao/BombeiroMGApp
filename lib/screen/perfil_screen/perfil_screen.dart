@@ -72,18 +72,35 @@ class _PerfilScreenState extends State<PerfilScreen> {
   String? unidadeSelecionada;
   String? habilitacaoSelecionada;
   List<String> listaCursosDoMilitar = [];
-
   @override
   void initState() {
+    super.initState();
+
     Future.microtask(() async {
       repository = context.read<Repository>();
-      atualizarFotoUsuario();
-      carregarDadosUsuario();
-      atualizarListaCursos();
+
+      await carregarDadosUsuario();
+
+      if (!mounted) return;
+
+      await atualizarFotoUsuario();
+
+      if (!mounted) return;
+
+      await atualizarListaCursos();
+
+      if (!mounted) return;
+
       idMilitar = await pegarIdMilitarUsuario();
-      await carregarCursosDosMilitar(idMilitar);
+
+      if (idMilitar.isNotEmpty) {
+        await carregarCursosDosMilitar(idMilitar);
+      }
+
+      if (mounted) {
+        setState(() {});
+      }
     });
-    super.initState();
   }
 
   @override
@@ -1115,6 +1132,10 @@ class _PerfilScreenState extends State<PerfilScreen> {
   }
 
   Future<void> atualizarDados() async {
+    // ==========================================
+    // VALIDA O FORMULÁRIO
+    // ==========================================
+
     if (!_formKey.currentState!.validate()) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -1127,49 +1148,69 @@ class _PerfilScreenState extends State<PerfilScreen> {
           ),
         ),
       );
+
       return;
     }
+
+    if (atualizandoDados) {
+      return;
+    }
+
     setState(() {
       atualizandoDados = true;
     });
 
-    final dataNascimento = _converterTextoParaDateTime(dateController.text);
-
-    final militarPerfil = Militar(
-      idMilitar: pegarUUIDUsuario(),
-      cpf: cpfController.text,
-      nomeCompleto: nomeCompletoController.text,
-      nomeDeGuerra: nomeDeGuerraController.text,
-      numeroBM: numeroBMController.text,
-      cargo: cargoSelecionado ?? '',
-      credencialMotorista: habilitacaoSelecionada ?? '',
-      dataNascimento: dataNascimento,
-      estadoCivil: estadoCivilSelecionado ?? '',
-      unidadeAtual: unidadeSelecionada ?? '',
-      rua: ruaController.text,
-      bairro: bairroController.text,
-      cidade: cidadeController.text,
-      numeroResidencia: numeroController.text,
-      cep: cepController.text,
-      telefone: telefoneController.text,
-      email: contatoController.text,
-      naturalidade: naturalidadeController.text,
-      urlImagem: imagePath ?? '',
-      funcao: funcaoController.text,
-      obs: obsController.text,
-      sincronizado: false,
-      numeroConta: numeroContaController.text,
-      banco: bancoController.text,
-      numeroAg: numeroAgController.text,
-      quantidadeAdi: quantidadeAdiController.text,
-      complementoEndereco: complementoController.text,
-    );
-
     Timer? timer;
 
     try {
+      // ==========================================
+      // MONTA OS DADOS DO MILITAR
+      // ==========================================
+
+      final dataNascimento = _converterTextoParaDateTime(dateController.text);
+
+      final militarPerfil = Militar(
+        idMilitar: pegarUUIDUsuario(),
+        cpf: cpfController.text.trim(),
+        nomeCompleto: nomeCompletoController.text.trim(),
+        nomeDeGuerra: nomeDeGuerraController.text.trim(),
+        numeroBM: numeroBMController.text.trim(),
+        cargo: cargoSelecionado ?? '',
+        credencialMotorista: habilitacaoSelecionada ?? '',
+        dataNascimento: dataNascimento,
+        estadoCivil: estadoCivilSelecionado ?? '',
+        unidadeAtual: unidadeSelecionada ?? '',
+        rua: ruaController.text.trim(),
+        bairro: bairroController.text.trim(),
+        cidade: cidadeController.text.trim(),
+        numeroResidencia: numeroController.text.trim(),
+        cep: cepController.text.trim(),
+        telefone: telefoneController.text.trim(),
+        email: contatoController.text.trim(),
+        naturalidade: naturalidadeController.text.trim(),
+        urlImagem: imagePath ?? '',
+        funcao: funcaoController.text.trim(),
+        obs: obsController.text.trim(),
+
+        // Enquanto não terminar a sincronização,
+        // o registro permanece pendente.
+        sincronizado: false,
+
+        numeroConta: numeroContaController.text.trim(),
+        banco: bancoController.text.trim(),
+        numeroAg: numeroAgController.text.trim(),
+        quantidadeAdi: quantidadeAdiController.text.trim(),
+        complementoEndereco: complementoController.text.trim(),
+      );
+
+      // ==========================================
+      // AVISO DE LENTIDÃO
+      // ==========================================
+
       timer = Timer(const Duration(seconds: 5), () {
         if (!mounted) return;
+
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -1179,70 +1220,105 @@ class _PerfilScreenState extends State<PerfilScreen> {
                 SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'Serviço com lentidão. Verifique sua conexão com a internet.',
+                    'Serviço com lentidão. '
+                    'Verifique sua conexão com a internet.',
                   ),
                 ),
               ],
             ),
           ),
         );
-        setState(() {
-          atualizandoDados = false;
-        });
+
+        // IMPORTANTE:
+        // não desligamos atualizandoDados aqui.
+        // A operação ainda pode estar acontecendo.
       });
+
+      // ==========================================
+      // 1. SALVA NO DRIFT
+      // ==========================================
 
       await context.read<Storage>().adicionarOuAtualizarMilitarNoDrift(
         militarPerfil,
       );
 
-      await context.read<Storage>().adicionarOuAtualizarDadosUsuarioNaNuvem();
+      // ==========================================
+      // 2. SALVA NO FIREBASE
+      // ==========================================
+
+      await context.read<Storage>().adicionarOuAtualizarDadosUsuarioNaNuvem(
+        militarPerfil,
+      );
+
+      // ==========================================
+      // 3. SINCRONIZA CURSOS
+      // ==========================================
 
       await context.read<Storage>().sincronizarMilitarCursoLocalParaNuvem();
 
-      // Se terminou antes de 5 segundos, o aviso de lentidão não aparece.
+      // ==========================================
+      // TUDO TERMINOU CORRETAMENTE
+      // ==========================================
+
       timer.cancel();
 
       if (!mounted) return;
 
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
+          duration: Duration(seconds: 4),
           content: Row(
             children: [
               Icon(Icons.check_circle, color: Colors.green),
               SizedBox(width: 10),
-              Text('Atualização feita com sucesso'),
+              Expanded(child: Text('Atualização feita com sucesso.')),
             ],
           ),
         ),
       );
-      setState(() {
-        atualizandoDados = false;
-      });
-    } on Exception catch (e) {
-      setState(() {
-        atualizandoDados = false;
-      });
+
+      // Recarrega os dados locais para garantir
+      // que a tela está mostrando exatamente
+      // o que ficou salvo no banco.
+      await carregarDadosUsuario();
+    } catch (e, stackTrace) {
       timer?.cancel();
+
+      debugPrint('Erro ao atualizar perfil: $e');
+
+      debugPrint(stackTrace.toString());
 
       if (!mounted) return;
 
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
+          duration: Duration(seconds: 5),
           content: Row(
             children: [
               Icon(Icons.close, color: Colors.red),
               SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  'Erro na atualização. Verifique sua internet e tente novamente.',
+                  'Não foi possível concluir a atualização. '
+                  'Os dados não foram totalmente sincronizados.',
                 ),
               ),
             ],
           ),
         ),
       );
+    } finally {
+      timer?.cancel();
 
-      print('Erro ao atualizar: $e');
+      if (mounted) {
+        setState(() {
+          atualizandoDados = false;
+        });
+      }
     }
   }
 

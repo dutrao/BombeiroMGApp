@@ -14,19 +14,20 @@ class MilitaresDialog extends StatefulWidget {
 }
 
 class _MilitaresDialogState extends State<MilitaresDialog> {
-  List<Militar> listaMilitaresDialog = [];
+  List<Militar> listaTodosMilitares = [];
 
-  TextEditingController searchController = TextEditingController();
+  List<Militar> listaMilitaresFiltrada = [];  
+  
 
   @override
   void initState() {
     atualizarMilitares();
+    
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<Storage>(context);
     return Dialog(
       backgroundColor: Colors.white,
       child: SizedBox(
@@ -43,10 +44,22 @@ class _MilitaresDialogState extends State<MilitaresDialog> {
                 style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
               ),
               SizedBox(height: 10),
-              SearchBar(
-                controller: searchController,
-                leading: Icon(Icons.search),
-                hintText: 'Buscar militar por nome',
+              SearchBar(               
+                hintText: 'Digite o nome do militar',
+                onChanged: (value) async {
+                  if (value.isEmpty) {
+                    listaMilitaresFiltrada = listaTodosMilitares;
+                  }else {
+                    listaMilitaresFiltrada = listaTodosMilitares.where((
+                      militar,
+                    ) {
+                      return militar.nomeCompleto.toLowerCase().contains(
+                        value.toLowerCase(),
+                      );
+                    }).toList();
+                  }
+                  setState(() {});
+                },
               ),
               SizedBox(height: 10),
               SizedBox(
@@ -57,20 +70,19 @@ class _MilitaresDialogState extends State<MilitaresDialog> {
                   itemBuilder: (context, index) {
                     return DialogMilitarTile(
                       itemAnuncio: widget.itemAnuncio,
-                      militar: listaMilitaresDialog[index],
+                      militar: listaMilitaresFiltrada[index],
                     );
                   },
                   separatorBuilder: (context, index) {
                     return Divider();
                   },
-                  itemCount: listaMilitaresDialog.length,
+                  itemCount: listaMilitaresFiltrada.length,
                 ),
               ),
               ElevatedButton(
                 onPressed: () {
                   Navigator.pop(context);
-                  setState(() {                    
-                  });
+                  setState(() {});
                 },
                 child: Text('Adicionar'),
               ),
@@ -82,6 +94,7 @@ class _MilitaresDialogState extends State<MilitaresDialog> {
   }
 
   void atualizarMilitares() {
-    listaMilitaresDialog = context.read<Storage>().listaTotalMilitares;
+    listaTodosMilitares = context.read<Storage>().listaTotalMilitares;
+    listaMilitaresFiltrada = listaTodosMilitares;
   }
 }

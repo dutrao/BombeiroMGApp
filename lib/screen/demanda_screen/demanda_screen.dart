@@ -104,7 +104,7 @@ class _DemandaScreenState extends State<DemandaScreen> {
         widget.demanda.idDemanda,
       );
       await context.read<Storage>().sincronizarDemandaLocalParaNuvem();
-      await context.read<Storage>().atualizarDemandas();
+      await context.read<Storage>().atualizarListaDemandas();
       timer.cancel();
       setState(() {
         deletandoOS = false;

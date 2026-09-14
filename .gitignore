@@ -49,3 +49,4 @@ app.*.map.json
 /keystore-base64.txt
 /android/key.properties
 /android/app/keystore.jks
+/scripts

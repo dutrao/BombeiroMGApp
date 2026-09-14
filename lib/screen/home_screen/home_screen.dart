@@ -45,7 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
       'nome': 'Viaturas',
       'tela': ViaturasScreen(),
     },
-    {'icone': Icons.chat, 'nome': 'Chat', 'tela': HomeChatScreen()},
+    //{'icone': Icons.chat, 'nome': 'Chat', 'tela': HomeChatScreen()},
   ];
   Militar? militarUsuario;
 

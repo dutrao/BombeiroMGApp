@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_application_1/database/anuncio_militar_diario_dao.dart';
 import 'package:flutter_application_1/database/anuncio_militar_dao.dart';
 import 'package:flutter_application_1/database/anuncio_ocorrencia_dao.dart';
@@ -139,19 +140,17 @@ class Repository {
     await _militarDao.adicionarMilitarNoDrift(militar);
   }
 
-  Future<void> adicionarOuAtualizarMilitarUsuarioNaNuvem() async {
+  Future<void> adicionarOuAtualizarMilitarUsuarioNaNuvem(
+    Militar militar,
+  ) async {
     try {
-      final String uuidUsuario = pegarUUIDUsuario();
-      Militar? militarUsuario = await _militarDao.buscarMilitarPorIdNoDrift(
-        uuidUsuario,
-      );
-      if (militarUsuario != null) {
-        await _firestoreService.inserirOuAtualizarDadosFirebase(militarUsuario);
-      }
-      print('Sucesso ao adicionar ou atualizar militar usuario');
-    } on Exception catch (e) {
-      print('Erro ao adicionar ou atualizar militar usuario: $e');
-      // TODO
+      await _firestoreService.inserirOuAtualizarDadosFirebase(militar);
+
+      print('Sucesso ao adicionar ou atualizar militar usuário');
+    } catch (e) {
+      print('Erro ao adicionar ou atualizar militar usuário: $e');
+
+      rethrow;
     }
   }
 
@@ -206,17 +205,18 @@ class Repository {
     return _firebaseStorageService.pegarUrlFotoUsuario();
   }
 
-  Future<void> fazerAutenticacao(String email, String password) async {
-    await _authService.autenticarUsuario(email, password);
+  Future<UserCredential> fazerAutenticacao(
+    String email,
+    String password,
+  ) async {
+    return await _authService.autenticarUsuario(email, password);
   }
 
-  Future<void>solicitarSenhaPorEmail(String email)async{
-   await _authService.solicitarSenhaPorEmail(email);
+  Future<void> solicitarSenhaPorEmail(String email) async {
+    await _authService.solicitarSenhaPorEmail(email);
   }
 
-  Future<void>enviarEmailconfirmacao()async{
-
-  }
+  Future<void> enviarEmailconfirmacao() async {}
 
   Future<void> cadastrarUsuario(String email, String password) async {
     await _authService.cadastrarUsuario(email, password);
@@ -228,6 +228,10 @@ class Repository {
 
   void deslogar() {
     _authService.deslogar();
+  }
+
+  Future<void> reenviarEmailConfirmacao(String email, String senha) async {
+    await _authService.reenviarEmailConfirmacao(email, senha);
   }
 
   //FUNÇÕES RELACIONADAS A ANUNCIO MILITAR DIARIO
@@ -587,8 +591,8 @@ class Repository {
     return listaDestinacaoViatura;
   }
 
-  Future<void> deletarViaturaNoDriftLogico(String idViatura)async{
-   await _viaturaDao.deletarViaturaNoDriftLogico(idViatura);
+  Future<void> deletarViaturaNoDriftLogico(String idViatura) async {
+    await _viaturaDao.deletarViaturaNoDriftLogico(idViatura);
   }
 
   ////FUNÇÃO RELACIONADA A MILITAR
@@ -776,8 +780,9 @@ class Repository {
   Future<void> adicionarOuAtualizarDemandaAoDrift(Demanda demanda) async {
     await _demandaDao.inserirDemandaNoDrift(demanda);
   }
+
   Future<void> deletarDemandaNoDriftLogico(String idDemanda) async {
-   await _demandaDao.deletarDemandaNoDriftLogico(idDemanda);
+    await _demandaDao.deletarDemandaNoDriftLogico(idDemanda);
   }
 
   Future<void> deletarDemandaDoDrift(String idDemanda) async {

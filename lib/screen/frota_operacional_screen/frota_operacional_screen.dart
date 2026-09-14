@@ -62,93 +62,101 @@ class _FrotaOperacionalScreenState extends State<FrotaOperacionalScreen> {
         ),
       ),
       body: SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            CardInformacoesAnuncioFrota.CardInformacoesAnuncioFrota(
-              responsavel: militarResponsavelAnuncio == null
-                  ? '---'
-                  : '${militarResponsavelAnuncio!.cargo} ${militarResponsavelAnuncio!.nomeDeGuerra}',
-              dataHorario: dataHorarioTexto,
-            ),
-            FrotaTopCard(listaDestinacaoViatura: listaDestinacaoViatura),
-            Expanded(
-              child: Material(
-                color: Colors.white,
-                child: ListView.builder(
-                  itemCount: destinacoes.length,
-                  itemBuilder: (context, index) {
-                    final destinacao = destinacoes[index];
-                    final viaturas = viaturasPorDestinacao(destinacao);
-
-                    return Card(
-                      margin: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      child: ExpansionTile(
-                        leading: const Icon(Icons.fire_truck),
-                        title: Text(
-                          destinacao,
-                          style: GoogleFonts.inter(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        subtitle: Text(
-                          '${viaturas.length} viatura(s)',
-                          style: GoogleFonts.inter(fontSize: 13),
-                        ),
-                        children: viaturas.isEmpty
-                            ? [
-                                Padding(
-                                  padding: const EdgeInsets.all(16),
-                                  child: Text(
-                                    'Nenhuma viatura nesta destinação.',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 14,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                                ),
-                              ]
-                            : viaturas.map((destinacaoViatura) {
-                                final viatura = destinacaoViatura.viatura;
-                                return ListTile(
-                                   onTap: () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          DetalhesViaturaScreen(
-                                            viatura: viatura,
-                                          ),
-                                    ),
-                                  ),
-                                  leading: const Icon(Icons.directions_car),
-                                  title: Text(
-                                    viatura.prefixo,
-                                    style: GoogleFonts.inter(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  subtitle: Text(
-                                    '${viatura.tipoViatura} - ${viatura.modelo}',
-                                    style: GoogleFonts.inter(fontSize: 13),
-                                  ),
-                                  trailing: Text(
-                                    viatura.categoria,
-                                    style: GoogleFonts.inter(fontSize: 12),
-                                  ),
-                                );
-                              }).toList(),
-                      ),
-                    );
-                  },
+        child: RefreshIndicator(
+          onRefresh: () async {
+            await carregarListaDestinacaoViaturasEMilitarResponsavel();
+          },          
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),          
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CardInformacoesAnuncioFrota.CardInformacoesAnuncioFrota(
+                  responsavel: militarResponsavelAnuncio == null
+                      ? '---'
+                      : '${militarResponsavelAnuncio!.cargo} ${militarResponsavelAnuncio!.nomeDeGuerra}',
+                  dataHorario: dataHorarioTexto,
                 ),
-              ),
+                FrotaTopCard(listaDestinacaoViatura: listaDestinacaoViatura),
+                Material(
+                  color: Colors.white,
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: destinacoes.length,
+                    itemBuilder: (context, index) {
+                      final destinacao = destinacoes[index];
+                      final viaturas = viaturasPorDestinacao(destinacao);
+                          
+                      return Card(
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        child: ExpansionTile(
+                          leading: const Icon(Icons.fire_truck),
+                          title: Text(
+                            destinacao,
+                            style: GoogleFonts.inter(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          subtitle: Text(
+                            '${viaturas.length} viatura(s)',
+                            style: GoogleFonts.inter(fontSize: 13),
+                          ),
+                          children: viaturas.isEmpty
+                              ? [
+                                  Padding(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Text(
+                                      'Nenhuma viatura nesta destinação.',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 14,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                  ),
+                                ]
+                              : viaturas.map((destinacaoViatura) {
+                                  final viatura = destinacaoViatura.viatura;
+                                  return ListTile(
+                                     onTap: () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            DetalhesViaturaScreen(
+                                              viatura: viatura,
+                                            ),
+                                      ),
+                                    ),
+                                    leading: const Icon(Icons.directions_car),
+                                    title: Text(
+                                      viatura.prefixo,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    subtitle: Text(
+                                      '${viatura.tipoViatura} - ${viatura.modelo}',
+                                      style: GoogleFonts.inter(fontSize: 13),
+                                    ),
+                                    trailing: Text(
+                                      viatura.categoria,
+                                      style: GoogleFonts.inter(fontSize: 12),
+                                    ),
+                                  );
+                                }).toList(),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

@@ -75,80 +75,88 @@ class _OcorrenciasScreenState extends State<OcorrenciasScreen> {
         ),
       ),
       body: SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            CardInformacoesAnuncioOcorrencia(
-              responsavel: militarResponsavel == null
-                  ? '---'
-                  : '${militarResponsavel!.cargo} ${militarResponsavel!.nomeDeGuerra}',
-              dataHorario: dataHorarioTexto,
-            ),
-            OcorrenciasTopCard(),
-            Expanded(
-              child: Material(
-                color: Colors.white,
-                child: ListView.builder(
-                  itemCount: listaTipoDeOcorrencia.length,
-                  itemBuilder: (context, index) {
-                    final tipoDeOcorrencia = listaTipoDeOcorrencia[index];
-                    final listaOcorrenciasPorTipo =
-                        pegarListaOcorrenciasPorTipo(tipoDeOcorrencia);
-
-                    return Card(
-                      margin: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      child: ExpansionTile(
-                        leading: const Icon(Icons.fire_truck),
-                        title: Text(
-                          tipoDeOcorrencia,
-                          style: GoogleFonts.inter(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        subtitle: Text(
-                          '${listaOcorrenciasPorTipo.length} ocorrencia(s)',
-                          style: GoogleFonts.inter(fontSize: 13),
-                        ),
-                        children: listaOcorrenciasPorTipo.isEmpty
-                            ? [
-                                Padding(
-                                  padding: const EdgeInsets.all(16),
-                                  child: Text(
-                                    'Nenhuma ocorrencia dessa natureza.',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 14,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                                ),
-                              ]
-                            : listaOcorrenciasPorTipo.map((ocorrencia) {
-                                return ListTile(
-                                  leading: const Icon(Icons.directions_car),
-                                  title: Text(
-                                    ocorrencia.codigo,
-                                    style: GoogleFonts.inter(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  subtitle: Text(
-                                    ocorrencia.nomeOcorrencia,
-                                    style: GoogleFonts.inter(fontSize: 13),
-                                  ),
-                                );
-                              }).toList(),
-                      ),
-                    );
-                  },
+        child: RefreshIndicator(
+          onRefresh: () async {
+           await atualizarListaDeOcorrenciaUltimoAnuncio();
+           await carregarDadosMilitarResponsavelAnuncioMaisRecente();
+          },
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CardInformacoesAnuncioOcorrencia(
+                  responsavel: militarResponsavel == null
+                      ? '---'
+                      : '${militarResponsavel!.cargo} ${militarResponsavel!.nomeDeGuerra}',
+                  dataHorario: dataHorarioTexto,
                 ),
-              ),
+                OcorrenciasTopCard(),
+                Material(
+                  color: Colors.white,
+                  child: ListView.builder(
+                    physics: const NeverScrollableScrollPhysics(),
+                    shrinkWrap: true,
+                    itemCount: listaTipoDeOcorrencia.length,
+                    itemBuilder: (context, index) {
+                      final tipoDeOcorrencia = listaTipoDeOcorrencia[index];
+                      final listaOcorrenciasPorTipo =
+                          pegarListaOcorrenciasPorTipo(tipoDeOcorrencia);
+
+                      return Card(
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        child: ExpansionTile(
+                          leading: const Icon(Icons.fire_truck),
+                          title: Text(
+                            tipoDeOcorrencia,
+                            style: GoogleFonts.inter(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          subtitle: Text(
+                            '${listaOcorrenciasPorTipo.length} ocorrencia(s)',
+                            style: GoogleFonts.inter(fontSize: 13),
+                          ),
+                          children: listaOcorrenciasPorTipo.isEmpty
+                              ? [
+                                  Padding(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Text(
+                                      'Nenhuma ocorrencia dessa natureza.',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 14,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                  ),
+                                ]
+                              : listaOcorrenciasPorTipo.map((ocorrencia) {
+                                  return ListTile(
+                                    leading: const Icon(Icons.directions_car),
+                                    title: Text(
+                                      ocorrencia.codigo,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    subtitle: Text(
+                                      ocorrencia.nomeOcorrencia,
+                                      style: GoogleFonts.inter(fontSize: 13),
+                                    ),
+                                  );
+                                }).toList(),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -165,8 +173,7 @@ class _OcorrenciasScreenState extends State<OcorrenciasScreen> {
         idMilitarResponsavel,
       );
     }
-    setState(() {      
-    });
+    setState(() {});
   }
 
   Future<void> atualizarListaDeOcorrenciaUltimoAnuncio() async {

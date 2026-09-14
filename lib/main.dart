@@ -2,6 +2,7 @@ import 'dart:isolate';
 import 'dart:ui';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_application_1/firebase_options.dart';
 import 'package:flutter_application_1/database/database.dart';
 import 'package:flutter_application_1/repository/repository.dart';
@@ -20,8 +21,15 @@ void downloadCallback(String id, int status, int progress) {
   send?.send([id, status, progress]);
 }
 
+final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
+    GlobalKey<ScaffoldMessengerState>();
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await SystemChrome.setPreferredOrientations([
+  DeviceOrientation.portraitUp,
+]);
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
@@ -54,6 +62,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      scaffoldMessengerKey: scaffoldMessengerKey,
       title: 'BombeiroMG App',
       theme: ThemeData(
         cardTheme: const CardThemeData(color: Colors.white),

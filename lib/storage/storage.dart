@@ -21,9 +21,7 @@ import 'package:uuid/uuid.dart';
 class Storage extends ChangeNotifier {
   final Repository repository;
 
-  Storage({required this.repository}) {
-    repository.sincronizarMilitaresDriftComFirebase();
-  }
+  Storage({required this.repository});
 
   List<Militar> listaTotalMilitares = [];
   List<AnuncioMilitar> listaCompletaAnuncio = [];
@@ -87,11 +85,15 @@ class Storage extends ChangeNotifier {
     await repository.adicionarMilitarLocal(militar);
   }
 
-  Future<void> adicionarOuAtualizarDadosUsuarioNaNuvem() async {
-    await repository.adicionarOuAtualizarMilitarUsuarioNaNuvem();
+  Future<void> adicionarOuAtualizarDadosUsuarioNaNuvem(Militar militar) async {
+    await repository.adicionarOuAtualizarMilitarUsuarioNaNuvem(militar);
   }
 
-  Future<void> sincronizarMilitarLocalComNuvem() async {
+  Future<void> reenviarEmailConfirmacao(String email, String senha) async {
+    await repository.reenviarEmailConfirmacao(email, senha);
+  }
+
+  Future<void> sincronizarMilitarNuvemParaLocal() async {
     await repository.sincronizarMilitaresFirebaseComDrift();
   }
 
@@ -111,8 +113,8 @@ class Storage extends ChangeNotifier {
     return repository.pegarUUIDUsuario();
   }
 
-  Future<void>solicitarSenhaPorEmail(String email)async{
-   await repository.solicitarSenhaPorEmail(email);
+  Future<void> solicitarSenhaPorEmail(String email) async {
+    await repository.solicitarSenhaPorEmail(email);
   }
 
   Future<Militar?> pegarDadosUsuario() async {
@@ -255,7 +257,7 @@ class Storage extends ChangeNotifier {
     }
   }
 
-  Future<void> carregarListaAnuncioMilitarCompleta() async {
+  Future<void> atualizarListaAnuncioMilitarCompleta() async {
     listaCompletaAnuncio = await repository.pegarListaAnuncioMilitarLocal();
     print('lista anuncio militar local: ${listaCompletaAnuncio.length}');
     notifyListeners();
@@ -416,7 +418,7 @@ class Storage extends ChangeNotifier {
     await repository.adicionarViaturaNoDrift(viatura);
   }
 
-  Future<void>deletarViaturaNoDriftLogico(String idViatura)async{
+  Future<void> deletarViaturaNoDriftLogico(String idViatura) async {
     repository.deletarViaturaNoDriftLogico(idViatura);
   }
 
@@ -580,8 +582,9 @@ class Storage extends ChangeNotifier {
   Future<void> adicionarOuAtualizarDemandaAoDrift(Demanda demanda) async {
     await repository.adicionarOuAtualizarDemandaAoDrift(demanda);
   }
+
   Future<void> deletarDemandaNoDriftLogico(String idDemanda) async {
-  await repository.deletarDemandaNoDriftLogico(idDemanda);
+    await repository.deletarDemandaNoDriftLogico(idDemanda);
   }
 
   Future<void> uploadDocumentoDemanda(bytes, String idDemanda) async {
@@ -604,7 +607,7 @@ class Storage extends ChangeNotifier {
     await repository.sincronizarDemandaNuvemParaLocal();
   }
 
-  Future<void> atualizarDemandas() async {
+  Future<void> atualizarListaDemandas() async {
     listaDemandas = await repository.pegarListaDemanda();
     print('Demandas');
     for (final demanda in listaDemandas) {
@@ -629,7 +632,7 @@ class Storage extends ChangeNotifier {
         await repository.adicionarOuAtualizarDemandaAoDrift(demanda);
       }
 
-      await atualizarDemandas();
+      await atualizarListaDemandas();
     });
   }
 

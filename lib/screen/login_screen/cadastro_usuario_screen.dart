@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/repository/repository.dart';
+import 'package:flutter_application_1/storage/storage.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_application_1/constants/constants.dart';
 
@@ -18,6 +19,7 @@ class _CadastroUsuarioScreenState extends State<CadastroUsuarioScreen> {
   bool obscureTextSenhaController = true;
   final _formKey = GlobalKey<FormState>();
   bool cadastrando = false;
+  bool reenviandoEmail = false;
 
   @override
   void dispose() {
@@ -251,6 +253,97 @@ class _CadastroUsuarioScreenState extends State<CadastroUsuarioScreen> {
                               child: Text('Cadastrar'),
                             ),
                           ),
+                        ),
+                        
+                        TextButton(
+                          onPressed: reenviandoEmail
+                              ? null
+                              : () async {
+                                  if (emailController.text.trim().isEmpty ||
+                                      senhaController.text.isEmpty) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Informe o e-mail e a senha para reenviar a confirmação.',
+                                        ),
+                                      ),
+                                    );
+                                    return;
+                                  }
+
+                                  try {
+                                    setState(() {
+                                      reenviandoEmail = true;
+                                    });
+
+                                    await context
+                                        .read<Storage>()
+                                        .reenviarEmailConfirmacao(
+                                          emailController.text.trim(),
+                                          senhaController.text,
+                                        );
+
+                                    if (!mounted) return;
+
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        duration: Duration(seconds: 5),
+                                        content: Row(
+                                          children: [
+                                            Icon(
+                                              Icons.mark_email_read,
+                                              color: Colors.green,
+                                            ),
+                                            SizedBox(width: 10),
+                                            Expanded(
+                                              child: Text(
+                                                'E-mail de confirmação reenviado. '
+                                                'Verifique sua caixa de entrada e também a pasta de spam/lixo eletrônico.',
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  } catch (e) {
+                                    if (!mounted) return;
+
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        duration: const Duration(seconds: 5),
+                                        content: Row(
+                                          children: [
+                                            const Icon(
+                                              Icons.error,
+                                              color: Colors.red,
+                                            ),
+                                            const SizedBox(width: 10),
+                                            Expanded(
+                                              child: Text(
+                                                'Não foi possível reenviar o e-mail: $e',
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  } finally {
+                                    if (mounted) {
+                                      setState(() {
+                                        reenviandoEmail = false;
+                                      });
+                                    }
+                                  }
+                                },
+                          child: reenviandoEmail
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Text('Não recebeu o email de confirmação? \nClique aqui para reenviar'),
                         ),
                       ],
                     ),

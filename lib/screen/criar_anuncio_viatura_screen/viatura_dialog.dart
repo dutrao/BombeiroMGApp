@@ -15,7 +15,8 @@ class ViaturaDialog extends StatefulWidget {
 }
 
 class _ViaturaDialogState extends State<ViaturaDialog> {
-  List<Viatura> listaViaturaDialog = [];
+  List<Viatura> listaTodasViatura = [];
+  List<Viatura> listaViaturaFiltrada = [];
 
   TextEditingController searchController = TextEditingController();
 
@@ -43,10 +44,23 @@ class _ViaturaDialogState extends State<ViaturaDialog> {
                 style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
               ),
               SizedBox(height: 10),
-              SearchBar(
-                controller: searchController,
-                leading: Icon(Icons.search),
-                hintText: 'Buscar vitura por prefixo',
+               SearchBar(
+                keyboardType: TextInputType.number,              
+                hintText: 'Digite  prefixo da viatura',
+                onChanged: (value) async {
+                  if (value.isEmpty) {
+                    listaViaturaFiltrada = listaTodasViatura;
+                  }else {
+                    listaViaturaFiltrada = listaTodasViatura.where((
+                      viatura,
+                    ) {
+                      return viatura.prefixo.contains(
+                        value
+                      );
+                    }).toList();
+                  }
+                  setState(() {});
+                },
               ),
               SizedBox(height: 10),
               SizedBox(
@@ -57,13 +71,13 @@ class _ViaturaDialogState extends State<ViaturaDialog> {
                   itemBuilder: (context, index) {
                     return DialogViaturaTile(
                       itemAnuncio: widget.itemAnuncio,
-                      viatura: listaViaturaDialog[index],
+                      viatura: listaViaturaFiltrada[index],
                     );
                   },
                   separatorBuilder: (context, index) {
                     return Divider();
                   },
-                  itemCount: listaViaturaDialog.length,
+                  itemCount: listaViaturaFiltrada.length,
                 ),
               ),
               ElevatedButton(
@@ -82,7 +96,8 @@ class _ViaturaDialogState extends State<ViaturaDialog> {
   Future<void> atualizarViaturas()async {
     await context.read<Storage>().atualizarListaTotalViaturas();
     setState(() {
-      listaViaturaDialog = context.read<Storage>().listaTotalViaturas;      
+      listaTodasViatura = context.read<Storage>().listaTotalViaturas;
+      listaViaturaFiltrada = listaTodasViatura;      
     });    
   }
 }

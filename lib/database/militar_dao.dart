@@ -212,7 +212,7 @@ class MilitarDao {
   }
 
   Future<void> atualizarMilitaresParaSincronizado() async {
-    database
+   await database
         .update(database.militarTabela)
         .write(MilitarTabelaCompanion(sincronizado: const Value(true)));
   }

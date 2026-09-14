@@ -13,20 +13,22 @@ class ViaturasScreen extends StatefulWidget {
 
 class _ViaturasScreenState extends State<ViaturasScreen> {
   bool carregandoDados = false;
-  List<Viatura> listaViaturaFiltrada = [];     
+  List<Viatura> listaViaturaFiltrada = [];
+  List<Viatura> listaTodasViaturas = [];
   final TextEditingController pesquisaController = TextEditingController();
-  
 
   @override
   void initState() {
     super.initState();
     Future.microtask(() async {
-     await atualizarListaViaturas();
-     if(!mounted)return;
-     setState(() {
-      print('numero total de viaturas pos autalização: ${context.read<Storage>().listaTotalViaturas.length}');
-     });
-    },);   
+      await atualizarListaViaturas();
+      if (!mounted) return;
+      setState(() {
+        print(
+          'numero total de viaturas pos autalização: ${context.read<Storage>().listaTotalViaturas.length}',
+        );
+      });
+    });
   }
 
   @override
@@ -37,9 +39,6 @@ class _ViaturasScreenState extends State<ViaturasScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final storage = context.watch<Storage>();
-    final List<Viatura> listaTodasViaturas = storage.listaTotalViaturas;
-    listaViaturaFiltrada = context.read<Storage>().listaTotalViaturas;     
     return Stack(
       children: [
         Scaffold(
@@ -54,23 +53,27 @@ class _ViaturasScreenState extends State<ViaturasScreen> {
                     controller: pesquisaController,
                     hintText: 'Digite o prefixo da viatura',
                     onChanged: (value) {
-                      if(value == ''){
+                      if (value == '') {
                         listaViaturaFiltrada = listaTodasViaturas;
-                        setState(() {                          
-                        });
-                      }else{
-                       listaViaturaFiltrada = listaTodasViaturas.where((viatura) {
-                         return viatura.prefixo.toLowerCase().contains(value.toLowerCase());
-                       },).toList();
-                       setState(() {                         
-                       });
+                        setState(() {});
+                      } else {
+                        listaViaturaFiltrada = listaTodasViaturas.where((
+                          viatura,
+                        ) {
+                          return viatura.prefixo.toLowerCase().contains(
+                            value.toLowerCase(),
+                          );
+                        }).toList();
+                        setState(() {});
                       }
-                    },                    
+                    },
                   ),
                   Expanded(
                     child: ListView.builder(
                       itemBuilder: (context, index) {
-                        return ViaturaTile(viatura: listaViaturaFiltrada[index]);
+                        return ViaturaTile(
+                          viatura: listaViaturaFiltrada[index],
+                        );
                       },
                       itemCount: listaViaturaFiltrada.length,
                     ),
@@ -86,10 +89,11 @@ class _ViaturasScreenState extends State<ViaturasScreen> {
         ],
       ],
     );
-  }  
-
-  Future<void> atualizarListaViaturas()async{
-   await context.read<Storage>().atualizarListaTotalViaturas();      
   }
-  
+
+  Future<void> atualizarListaViaturas() async {
+    await context.read<Storage>().atualizarListaTotalViaturas();
+    listaTodasViaturas =  context.read<Storage>().listaTotalViaturas;
+    listaViaturaFiltrada = listaTodasViaturas;
+  }
 }
